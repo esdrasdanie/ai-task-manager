@@ -9,6 +9,7 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
 import { CirclePlusIcon, MailIcon } from "lucide-react"
+import { NavLink } from "react-router"
 
 export function NavMain({
   items,
@@ -46,9 +47,11 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon}
-                <span>{item.title}</span>
+              <SidebarMenuButton tooltip={item.title} asChild>
+                <NavLink to={item.url} className="flex items-center gap-2.5 w-full">
+                  {item.icon}
+                  <span className="truncate">{item.title}</span>
+                </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
