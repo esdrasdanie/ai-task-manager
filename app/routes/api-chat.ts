@@ -1,7 +1,6 @@
 import { convertToModelMessages, streamText, type UIMessage } from "ai"
 
 // Resource route: recebe as mensagens do useChat e devolve o stream da resposta.
-// Requer a variável de ambiente AI_GATEWAY_API_KEY (Vercel AI Gateway).
 export async function action({ request }: { request: Request }) {
   const { messages }: { messages: UIMessage[] } = await request.json()
 
@@ -14,3 +13,4 @@ export async function action({ request }: { request: Request }) {
 
   return result.toUIMessageStreamResponse()
 }
+
