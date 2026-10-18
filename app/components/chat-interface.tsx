@@ -34,7 +34,35 @@ const initialConversations: Conversation[] = [
   { id: 'receitas-rapidas', title: 'Receitas rápidas', date: '10 de jun.', messages: [] },
 ]
 
-export function ChatInterface() {
+export type TaskData = {
+  title: string
+  description: string
+  estimated_time: string
+  steps: string[]
+  suggested_tests: string[]
+  acceptance_criteria: string[]
+  implementation_suggestion: string
+}
+
+type ChatInterfaceProps = {
+  onTaskGenerated?: (task: TaskData) => void
+}
+
+function extractTask(text: string): TaskData | null {
+  const match = text.match(/<task-json>([\s\S]*?)<\/task-json>/)
+  if (!match) return null
+  try {
+    return JSON.parse(match[1].trim()) as TaskData
+  } catch {
+    return null
+  }
+}
+
+function stripTaskJson(text: string): string {
+  return text.replace(/<task-json>[\s\S]*?<\/task-json>/g, '').trim()
+}
+
+export function ChatInterface({ onTaskGenerated }: ChatInterfaceProps) {
   const { messages, sendMessage, status, setMessages, error } = useChat()
   const [input, setInput] = useState('')
   const [conversations, setConversations] = useState(initialConversations)
@@ -62,6 +90,15 @@ export function ChatInterface() {
     )
   }, [messages, activeId])
 
+  // Extrai task-json das respostas completas da IA
+  useEffect(() => {
+    if (!onTaskGenerated || isLoading) return
+    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
+    if (!lastAssistant) return
+    const task = extractTask(getText(lastAssistant))
+    if (task) onTaskGenerated(task)
+  }, [isLoading])
+
   function handleNewConversation() {
     const id = crypto.randomUUID()
     setConversations((previous) => [
@@ -88,11 +125,12 @@ export function ChatInterface() {
     await sendMessage({ text })
   }
 
-  function getText(message: (typeof messages)[number]) {
-    return message.parts
+  function getText(message: (typeof messages)[number], strip = false) {
+    const raw = message.parts
       .filter((part) => part.type === 'text')
       .map((part) => part.text)
       .join('')
+    return strip ? stripTaskJson(raw) : raw
   }
 
   return (
@@ -107,7 +145,7 @@ export function ChatInterface() {
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex h-20 shrink-0 items-center justify-between border-b border-border/70 bg-white/95 px-5 text-[#1f2a22] backdrop-blur md:px-10"><div className="flex items-center gap-3"><Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menu"><Menu /></Button><div><div className="flex items-center gap-2"><h1 className="text-sm font-semibold">{activeConversation?.title ?? 'Nova conversa'}</h1><Badge variant="secondary" className="hidden rounded-full text-[10px] font-normal sm:inline-flex">Ativa</Badge></div><p className="text-xs text-muted-foreground">Aura está pronta para ajudar</p></div></div><div className="flex items-center gap-1"><Button variant="ghost" size="icon" aria-label="Mais opções"><MoreHorizontal /></Button><Button variant="outline" size="sm" className="hidden gap-2 rounded-full sm:flex">Compartilhar</Button></div></header>
 
-        <ScrollArea className="min-h-0 flex-1"><div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-10 md:px-10 md:py-14"><div className="flex items-center justify-center gap-3 text-xs text-muted-foreground"><Separator className="max-w-24" /><span>Hoje</span><Separator className="max-w-24" /></div>{messages.length === 0 ? <div className="flex min-h-[45vh] flex-col items-center justify-center text-center"><div className="mb-5 flex size-14 items-center justify-center rounded-2xl bg-[#e6eee1] text-[#3e6041]"><Sparkles className="size-6" /></div><h2 className="text-xl font-semibold tracking-tight">Como posso ajudar?</h2><p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">Comece uma nova conversa com a Aura.</p></div> : messages.map((message) => <MessageRow key={message.id} role={message.role} content={getText(message)} />)}{isLoading && <div className="flex items-start gap-3"><Avatar className="size-8 shrink-0"><AvatarFallback className="bg-[#242b25] text-white"><Bot className="size-4" /></AvatarFallback></Avatar><div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-sm"><div className="flex gap-1"><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" /><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" /><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" /></div></div></div>}</div></ScrollArea>
+        <ScrollArea className="min-h-0 flex-1"><div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-10 md:px-10 md:py-14"><div className="flex items-center justify-center gap-3 text-xs text-muted-foreground"><Separator className="max-w-24" /><span>Hoje</span><Separator className="max-w-24" /></div>{messages.length === 0 ? <div className="flex min-h-[45vh] flex-col items-center justify-center text-center"><div className="mb-5 flex size-14 items-center justify-center rounded-2xl bg-[#e6eee1] text-[#3e6041]"><Sparkles className="size-6" /></div><h2 className="text-xl font-semibold tracking-tight">Como posso ajudar?</h2><p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">Comece uma nova conversa com a Aura.</p></div> : messages.map((message) => <MessageRow key={message.id} role={message.role} content={getText(message, message.role === 'assistant')} />)}{isLoading && <div className="flex items-start gap-3"><Avatar className="size-8 shrink-0"><AvatarFallback className="bg-[#242b25] text-white"><Bot className="size-4" /></AvatarFallback></Avatar><div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-sm"><div className="flex gap-1"><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" /><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" /><span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" /></div></div></div>}</div></ScrollArea>
         {error && <p role="alert" className="mx-auto w-full max-w-3xl shrink-0 px-5 pb-2 text-center text-xs text-destructive md:px-10">Não foi possível gerar a resposta. Verifique a configuração do AI Gateway e tente novamente.</p>}
 
         <div className="shrink-0 border-t bg-white/50 p-4 backdrop-blur-sm"><div className="mx-auto w-full max-w-3xl"><form onSubmit={handleSubmit} className="relative rounded-2xl border border-border bg-white p-2 shadow-[0_8px_30px_rgba(30,40,30,0.06)]"><Textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} placeholder="Escreva uma mensagem..." aria-label="Mensagem" className="min-h-14 resize-none border-0 bg-transparent pr-12 text-[#1f2a22] placeholder:text-[#667267] shadow-none focus-visible:ring-0" /><div className="flex items-center justify-between px-2 pb-1"><div className="flex items-center gap-1"><Button type="button" variant="ghost" size="icon" className="size-8 rounded-lg text-muted-foreground" aria-label="Anexar arquivo"><Paperclip /></Button><Button type="button" variant="ghost" size="icon" className="size-8 rounded-lg text-muted-foreground" aria-label="Usar microfone"><Mic /></Button><span className="ml-2 hidden text-xs text-muted-foreground sm:inline">Shift + Enter para nova linha</span></div><Button type="submit" size="icon" aria-label="Enviar mensagem" className="size-9 rounded-xl bg-[#242b25] text-white hover:bg-[#343d35]" isDisabled={!input.trim() || isLoading}><ArrowUp /></Button></div></form><p className="mt-3 text-center text-[11px] text-muted-foreground">A Aura pode cometer erros. Verifique informações importantes.</p></div></div>

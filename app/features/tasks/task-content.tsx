@@ -5,40 +5,31 @@ import {
   Lightbulb,
   ListChecks,
   ScrollText,
+  Sparkles,
 } from 'lucide-react'
+import { Form } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import type { TaskData } from '~/components/chat-interface'
 
-const task = {
-  title: 'Secure Login Form with Authentication',
-  description:
-    'Implement a modern login form with field validation, session-based authentication, and real-time error feedback.',
-  estimated_time: '2 days',
-  steps: [
-    'Create a form component using React',
-    'Add field validation using a suitable library',
-    'Connect backend for user authentication',
-    'Persist sessions using SQLite',
-    'Test full login and logout flow',
-  ],
-  suggested_tests: [
-    "it('should render login form correctly')",
-    "it('should validate input fields')",
-    "it('should authenticate valid credentials')",
-    "it('should prevent access with invalid credentials')",
-  ],
-  acceptance_criteria: [
-    'Login form displays properly with required fields',
-    'Invalid input is correctly flagged',
-    'Valid users can log in and maintain a session',
-    'Users are redirected upon login and logout',
-  ],
-  implementation_suggestion:
-    'Use React Hook Form for input validation, Prisma ORM for managing user data, and configure protected routes using React Router 7.',
+type TaskContentProps = {
+  task: TaskData | null
 }
 
-export function TaskContent() {
+export function TaskContent({ task }: TaskContentProps) {
+  if (!task) {
+    return (
+      <section className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-white/50 text-muted-foreground">
+        <div className="flex flex-col items-center gap-2 text-center opacity-40">
+          <Sparkles className="size-10" />
+          <p className="text-sm font-medium">Nenhuma task gerada ainda</p>
+          <p className="max-w-[200px] text-xs">Descreva uma tarefa no chat e a Aura irá gerá-la aqui.</p>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="flex h-full flex-col overflow-hidden">
       <ScrollArea className="flex-1 overflow-hidden">
@@ -113,9 +104,18 @@ export function TaskContent() {
           </Card>
         </div>
       </ScrollArea>
-      <div className="flex justify-end">
-        <Button>Salvar Task</Button>
-      </div>
+      <Form method="post" action="/task/new">
+        <input type="hidden" name="title" value={task.title} />
+        <input type="hidden" name="description" value={task.description} />
+        <input type="hidden" name="estimated_time" value={task.estimated_time} />
+        <input type="hidden" name="steps" value={JSON.stringify(task.steps)} />
+        <input type="hidden" name="suggested_tests" value={JSON.stringify(task.suggested_tests)} />
+        <input type="hidden" name="acceptance_criteria" value={JSON.stringify(task.acceptance_criteria)} />
+        <input type="hidden" name="implementation_suggestion" value={task.implementation_suggestion} />
+        <div className="flex justify-end p-2">
+          <Button type="submit">Salvar Task</Button>
+        </div>
+      </Form>
     </section>
   )
 }
