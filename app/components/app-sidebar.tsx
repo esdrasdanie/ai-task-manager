@@ -46,6 +46,11 @@ const data = {
       icon: <LayoutDashboardIcon />,
     },
     {
+      title: 'Users',
+      url: '/users',
+      icon: <UsersIcon />,
+    },
+    {
       title: 'Tasks',
       url: '/tasks',
       icon: <CheckSquareIcon />,
