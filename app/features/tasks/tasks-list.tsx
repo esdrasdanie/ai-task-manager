@@ -1,62 +1,119 @@
-import type { Row } from '@libsql/client'
-import { Badge } from '~/components/ui/badge'
+import { Pencil, Trash2 } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table'
+import { Button } from '~/components/ui/button'
 
-type Task = Row
+const tasks = [
+  {
+    id: '1',
+    status: 'completed',
+    title: 'Project Planning',
+    description: 'Create initial project roadmap and timeline',
+    dueDate: 'Apr 15, 2024',
+    priority: 'High',
+  },
+  {
+    id: '2',
+    status: 'pending',
+    title: 'Database Setup',
+    description: 'Configure and initialize PostgreSQL database',
+    dueDate: 'Apr 16, 2024',
+    priority: 'High',
+  },
+  {
+    id: '3',
+    status: 'completed',
+    title: 'API Documentation',
+    description: 'Write comprehensive API documentation using Swagger',
+    dueDate: 'Apr 17, 2024',
+    priority: 'Medium',
+  },
+  {
+    id: '4',
+    status: 'pending',
+    title: 'User Authentication',
+    description: 'Implement JWT-based authentication system',
+    dueDate: 'Apr 18, 2024',
+    priority: 'High',
+  },
+  {
+    id: '5',
+    status: 'pending',
+    title: 'UI Components',
+    description: 'Create reusable UI component library',
+    dueDate: 'Apr 19, 2024',
+    priority: 'Medium',
+  },
+]
 
-type TasksListProps = {
-  tasks: Task[]
-}
-
-const priorityVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
-  high: 'destructive',
-  medium: 'default',
-  low: 'secondary',
-}
-
-export function TasksList({ tasks }: TasksListProps) {
-  if (tasks.length === 0) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 py-20 text-center text-muted-foreground">
-        <p className="text-sm font-medium">Nenhuma task encontrada</p>
-        <p className="text-xs">Crie uma nova task no chat da Aura.</p>
-      </div>
-    )
-  }
-
+export function TasksList() {
   return (
-    <div className="p-6">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-3 pr-4 font-medium">Status</th>
-            <th className="pb-3 pr-4 font-medium">Título</th>
-            <th className="pb-3 pr-4 font-medium">Descrição</th>
-            <th className="pb-3 font-medium">Prioridade</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={String(task.id)} className="border-b last:border-0 hover:bg-muted/40">
-              <td className="py-3 pr-4">
-                <span
-                  className={`inline-block size-3 rounded-full ${
-                    task.status === 'done' ? 'bg-green-500' : 'bg-muted-foreground/30'
+    <div className='rounded-md border'>
+      <Table aria-label='Lista de Tarefas'>
+        <TableHeader>
+          <TableHead id='status' isRowHeader className='w-[50px]'>
+            Status
+          </TableHead>
+          <TableHead id='title' className='w-[300px]'>
+            Título
+          </TableHead>
+          <TableHead id='description'>Descrição</TableHead>
+          <TableHead id='dueDate' className='w-[150px]'>
+            Data de Entrega
+          </TableHead>
+          <TableHead id='priority' className='w-[100px]'>
+            Prioridade
+          </TableHead>
+          <TableHead id='actions' className='w-[120px]'>
+            Ações
+          </TableHead>
+        </TableHeader>
+        <TableBody items={tasks}>
+          {(task) => (
+            <TableRow id={task.id}>
+              <TableCell>
+                <div
+                  className={`h-4 w-4 rounded-full ${
+                    task.status === 'completed'
+                      ? 'bg-green-500'
+                      : 'bg-slate-200'
                   }`}
                 />
-              </td>
-              <td className="py-3 pr-4 font-medium">{String(task.title)}</td>
-              <td className="max-w-sm truncate py-3 pr-4 text-muted-foreground">
-                {String(task.description ?? '')}
-              </td>
-              <td className="py-3">
-                <Badge variant={priorityVariant[String(task.priority)] ?? 'secondary'}>
-                  {String(task.priority ?? 'medium')}
-                </Badge>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </TableCell>
+              <TableCell className='font-medium'>{task.title}</TableCell>
+              <TableCell>{task.description}</TableCell>
+              <TableCell>{task.dueDate}</TableCell>
+              <TableCell>{task.priority}</TableCell>
+              <TableCell>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8'
+                    title='Edit task'
+                  >
+                    <Pencil className='h-4 w-4' />
+                  </Button>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 text-destructive hover:text-destructive'
+                    title='Delete task'
+                  >
+                    <Trash2 className='h-4 w-4' />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   )
 }
