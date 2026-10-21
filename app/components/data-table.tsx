@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import {
   columnFilteringFeature,
@@ -18,14 +16,13 @@ import {
   type SortingState,
 } from "@tanstack/react-table"
 import {
-  DropIndicator,
-  useDragAndDrop,
-  useListData,
-} from "react-aria-components"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { z } from "zod"
-
 import { useIsMobile } from "~/hooks/use-mobile"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -46,12 +43,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer"
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import {
@@ -78,6 +69,7 @@ import {
   TabsTrigger,
 } from "~/components/ui/tabs"
 import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon, TrendingUpIcon } from "lucide-react"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -283,11 +275,6 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[]
 }) {
-  const list = useListData({
-    initialItems: initialData,
-    getKey: (item) => String(item.id),
-  })
-  const data = list.items
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<ColumnVisibilityState>({})
@@ -301,7 +288,7 @@ export function DataTable({
   })
   const table = useTable({
     features,
-    data,
+    data: initialData,
     columns,
     state: {
       sorting,
@@ -317,27 +304,6 @@ export function DataTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
-  })
-  const { dragAndDropHooks } = useDragAndDrop({
-    getItems: (keys, items: z.infer<typeof schema>[]) =>
-      items.map((item) => ({
-        "text/plain": item.header,
-      })),
-    onReorder(e) {
-      if (e.target.dropPosition === "before") {
-        list.moveBefore(e.target.key, e.keys)
-      } else if (e.target.dropPosition === "after") {
-        list.moveAfter(e.target.key, e.keys)
-      }
-    },
-    renderDropIndicator(target) {
-      return (
-        <DropIndicator
-          target={target}
-          className="outline-blue-400 data-drop-target:outline-1"
-        />
-      )
-    },
   })
 
   return (
@@ -453,68 +419,40 @@ export function DataTable({
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
-          <Table
-            aria-label="Tasks"
-            dragAndDropHooks={dragAndDropHooks}
-            selectionMode="multiple"
-            onSelectionChange={(selection) => {
-              if (selection === "all") {
-                table.toggleAllRowsSelected()
-              } else {
-                table.setRowSelection(
-                  Object.fromEntries([...selection].map((key) => [key, true]))
-                )
-              }
-            }}
-            sortDescriptor={
-              sorting.length
-                ? {
-                    column: sorting[0].id,
-                    direction: sorting[0].desc ? "descending" : "ascending",
-                  }
-                : undefined
-            }
-            onSortChange={(sortDescriptor) => {
-              table.setSorting([
-                {
-                  id: "" + sortDescriptor.column,
-                  desc: sortDescriptor.direction === "descending",
-                },
-              ])
-            }}
-          >
+          <Table aria-label="Tasks">
             <TableHeader className="sticky top-0 z-10 bg-muted">
               {table.getFlatHeaders().map((header) => (
-                <TableHead
-                  key={header.id}
-                  id={header.id}
-                  isRowHeader={header.index === 1}
-                  allowsSorting={header.column.getCanSort()}
-                >
+                <TableHead key={header.id}>
                   {header.isPlaceholder ? null : (
                     <table.FlexRender header={header} />
                   )}
                 </TableHead>
               ))}
             </TableHeader>
-            <TableBody
-              className="data-empty:h-24 data-empty:text-center **:data-[slot=table-cell]:first:w-8"
-              renderEmptyState={() => "No results."}
-            >
-              {table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  id={row.id}
-                  value={row.original}
-                  className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      <table.FlexRender cell={cell} />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+            <TableBody className="**:data-[slot=table-cell]:first:w-8">
+              {table.getRowModel().rows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    No results.
+                  </td>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="relative z-0"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        <table.FlexRender cell={cell} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

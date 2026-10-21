@@ -1,24 +1,21 @@
-"use client"
-
-import { Button } from "~/components/ui/button"
+import { Button } from "~/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "~/components/ui/sidebar"
-import { CirclePlusIcon, MailIcon } from "lucide-react"
-import { NavLink } from "react-router"
+} from "~/components/ui/sidebar";
+import { CirclePlusIcon, MailIcon } from "lucide-react";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: React.ReactNode
-  }[]
+    title: string;
+    url: string;
+    icon?: React.ReactNode;
+  }[];
 }) {
   return (
     <SidebarGroup>
@@ -27,22 +24,18 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
+              href="/task/new"
               className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-              asChild
             >
-              <NavLink to="/task/new" className="flex items-center gap-2.5 w-full">
-                <CirclePlusIcon
-                />
-                <span className="truncate">Quick Create</span>
-              </NavLink> 
+              <CirclePlusIcon />
+              <span className="truncate">Quick Create</span>
             </SidebarMenuButton>
             <Button
               size="icon"
               className="size-8 group-data-[collapsible=icon]:opacity-0"
               variant="outline"
             >
-              <MailIcon
-              />
+              <MailIcon />
               <span className="sr-only">Inbox</span>
             </Button>
           </SidebarMenuItem>
@@ -50,16 +43,14 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <NavLink to={item.url} className="flex items-center gap-2.5 w-full">
-                  {item.icon}
-                  <span className="truncate">{item.title}</span>
-                </NavLink>
+              <SidebarMenuButton tooltip={item.title} href={item.url}>
+                {item.icon}
+                <span className="truncate">{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

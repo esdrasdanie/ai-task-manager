@@ -4,8 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider     = "sqlite"
+  url          = env("DATABASE_URL")
+  // Para deploy com Turso, troque provider por "sqlite" com adapter libsql
+  // O adapter é injetado em runtime via prisma/prisma.ts
 }
 
 model User {
