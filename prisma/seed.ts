@@ -1,5 +1,7 @@
 import { faker } from '@faker-js/faker'
-import prisma from './prisma'
+import { PrismaClient } from '../app/generated/prisma/index.js'
+
+const prisma = new PrismaClient()
 
 async function main() {
   await prisma.post.deleteMany()
@@ -27,7 +29,9 @@ async function main() {
         title: faker.lorem.sentence({ min: 4, max: 8 }),
         content: faker.lorem.paragraphs({ min: 1, max: 3 }),
         published: faker.datatype.boolean(),
-        author_id: randomUser.id,
+        author: {
+          connect: { id: randomUser.id },
+        },
       },
     })
   }

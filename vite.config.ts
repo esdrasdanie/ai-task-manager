@@ -7,4 +7,13 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  ssr: {
+    // Garante que o @prisma/client e o adapter não sejam bundlizados pelo Vite
+    // no SSR, evitando conflitos CJS/ESM com os binários nativos do Prisma.
+    noExternal: ["@prisma/adapter-libsql", "@libsql/client"],
+    external: ["@prisma/client"],
+  },
+  optimizeDeps: {
+    exclude: ["@prisma/client"],
+  },
 });

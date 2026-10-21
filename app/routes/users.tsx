@@ -24,22 +24,16 @@ export default function ({ loaderData }: Route.ComponentProps) {
       <Table aria-label='Lista de Usuários'>
         <TableHeader>
           <TableRow>
-            <TableHead id='id' isRowHeader className='w-[60px]'>
-              ID
-            </TableHead>
-            <TableHead id='email'>E-mail</TableHead>
-            <TableHead id='name' className='w-[200px]'>
-              Nome
-            </TableHead>
-            <TableHead id='age' className='w-[120px]'>
-              Age
-            </TableHead>
+            <TableHead className='w-[60px]'>ID</TableHead>
+            <TableHead>E-mail</TableHead>
+            <TableHead className='w-[200px]'>Nome</TableHead>
+            <TableHead className='w-[120px]'>Age</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {loaderData.users.map((user) => (
-            <TableRow key={user.id} id={String(user.id)}>
+            <TableRow key={user.id}>
               <TableCell className='font-mono text-xs'>{user.id}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell className='font-medium'>{user.name}</TableCell>
