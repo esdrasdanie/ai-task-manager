@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { defineConfig } from 'prisma/config'
+import { defineConfig } from '@prisma/config'
 import path from 'node:path'
 
 type Env = {

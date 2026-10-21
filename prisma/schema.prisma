@@ -1,7 +1,7 @@
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -9,21 +9,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// use prisma-8
+model Task {
+  id                        String   @id @default(uuid())
+  title                     String
+  description               String
+  steps                     String?  // Armazena JSON em string
+  estimated_time            String
+  implementation_suggestion String?
+  acceptance_criteria       String?  // Armazena JSON em string
+  suggested_tests           String?  // Armazena JSON em string
+  content                   String?  // Markdown combinado
+  chat_history              String?  // Armazena JSON em string
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  age       Int?
-  name      String?
-  posts     Post[]
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
+  @@map("tasks")
 }

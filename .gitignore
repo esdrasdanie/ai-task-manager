@@ -1,9 +1,10 @@
 .DS_Store
-.env
 /node_modules/
 
 # React Router
 /.react-router/
 /build/
-
-/app/generated/prisma
+repomix-output.md
+.env
+/app/generated/
+/prisma/database/
